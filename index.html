@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Senhas Seguras</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 24px;
+            text-align: center;
+            color: var(--text-color);
+        }
+
+        .result-container {
+            background-color: rgba(15, 23, 42, 0.6);
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border: 1px solid #334155;
+        }
+
+        #password {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            word-break: break-all;
+            margin-right: 10px;
+        }
+
+        .btn-copy {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-copy:hover {
+            background: var(--primary-hover);
+        }
+
+        .strength-meter {
+            margin-bottom: 25px;
+        }
+
+        .strength-text {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #strength-label {
+            font-weight: bold;
+        }
+
+        .bar-container {
+            height: 8px;
+            background-color: #334155;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .bar {
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s, background-color 0.3s;
+        }
+
+        .setting {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        label {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        input[type="range"] {
+            width: 70%;
+            accent-color: var(--primary);
+        }
+
+        .length-val {
+            font-weight: bold;
+            color: var(--text-color);
+            min-width: 25px;
+            text-align: right;
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .btn-generate {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+
+        .btn-generate:hover {
+            background: var(--primary-hover);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Gerador de Senhas</h1>
+    
+    <div class="result-container">
+        <span id="password">S3nh4!St7ong</span>
+        <button class="btn-copy" id="copy-btn">Copiar</button>
+    </div>
+
+    <div class="strength-meter">
+        <div class="strength-text">
+            <span>Segurança:</span>
+            <span id="strength-label">Média</span>
+        </div>
+        <div class="bar-container">
+            <div class="bar" id="strength-bar"></div>
+        </div>
+    </div>
+
+    <div class="settings">
+        <div class="setting">
+            <label>Número de caracteres</label>
+            <input type="range" id="length" min="4" max="32" value="12">
+            <span class="length-val" id="length-val">12</span>
+        </div>
+        <div class="setting">
+            <label>Incluir Letras Maiúsculas</label>
+            <input type="checkbox" id="uppercase" checked>
+        </div>
+        <div class="setting">
+            <label>Incluir Letras Minúsculas</label>
+            <input type="checkbox" id="lowercase" checked>
+        </div>
+        <div class="setting">
+            <label>Incluir Números</label>
+            <input type="checkbox" id="numbers" checked>
+        </div>
+        <div class="setting">
+            <label>Incluir Símbolos</label>
+            <input type="checkbox" id="symbols">
+        </div>
+    </div>
+
+    <button class="btn-generate" id="generate-btn">Gerar Senha</button>
+</div>
+
+<script>
+    const passwordEl = document.getElementById('password');
+    const lengthEl = document.getElementById('length');
+    const lengthValEl = document.getElementById('length-val');
+    const uppercaseEl = document.getElementById('uppercase');
+    const lowercaseEl = document.getElementById('lowercase');
+    const numbersEl = document.getElementById('numbers');
+    const symbolsEl = document.getElementById('symbols');
+    const generateBtn = document.getElementById('generate-btn');
+    const copyBtn = document.getElementById('copy-btn');
+    const strengthBar = document.getElementById('strength-bar');
+    const strengthLabel = document.getElementById('strength-label');
+
+    const randomFunc = {
+        lower: () => String.fromCharCode(Math.floor(Math.random() * 26) + 97),
+        upper: () => String.fromCharCode(Math.floor(Math.random() * 26) + 65),
+        number: () => String.fromCharCode(Math.floor(Math.random() * 10) + 48),
+        symbol: () => {
+            const symbols = '!@#$%^&*(){}[]=<>/,.';
+            return symbols[Math.floor(Math.random() * symbols.length)];
+        }
+    };
+
+    // Atualiza o número do slider em tempo real
+    lengthEl.addEventListener('input', (e) => {
+        lengthValEl.innerText = e.target.value;
+    });
+
+    // Evento de clique para gerar
+    generateBtn.addEventListener('click', () => {
+        const length = +lengthEl.value;
+        const hasLower = lowercaseEl.checked;
+        const hasUpper = uppercaseEl.checked;
+        const hasNumber = numbersEl.checked;
+        const hasSymbol = symbolsEl.checked;
+
+        passwordEl.innerText = generatePassword(hasLower, hasUpper, hasNumber, hasSymbol, length);
+        updateStrength(length, hasLower, hasUpper, hasNumber, hasSymbol);
+    });
+
+    // Copiar para a área de transferência
+    copyBtn.addEventListener('click', () => {
+        const password = passwordEl.innerText;
+        if (!password || password === 'Selecione as opções') return;
+        
+        navigator.clipboard.writeText(password).then(() => {
+            const originalText = copyBtn.innerText;
+            copyBtn.innerText = 'Copiado!';
+            copyBtn.style.background = 'var(--success)';
+            setTimeout(() => {
+                copyBtn.innerText = originalText;
+                copyBtn.style.background = 'var(--primary)';
+            }, 1500);
+        });
+    });
+
+    // Função de geração de senha
+    function generatePassword(lower, upper, number, symbol, length) {
+        let generatedPassword = '';
+        const typesCount = lower + upper + number + symbol;
+        const typesArr = [{ lower }, { upper }, { number }, { symbol }].filter(item => Object.values(item)[0]);
+
+        if (typesCount === 0) {
+            return 'Selecione as opções';
+        }
+
+        for (let i = 0; i < length; i += typesCount) {
+            typesArr.forEach(type => {
+                const funcName = Object.keys(type)[0];
+                generatedPassword += randomFunc[funcName]();
+            });
+        }
+
+        // Embaralha a senha final para não seguir sempre a mesma ordem dos blocos
+        return generatedPassword.slice(0, length).split('').sort(() => Math.random() - 0.5).join('');
+    }
+
+    // Calcula e atualiza a barra de segurança
+    function updateStrength(length, lower, upper, number, symbol) {
+        let score = 0;
+        const typesCount = lower + upper + number + symbol;
+
+        if (length >= 8) score++;
+        if (length >= 14) score++;
+        if (typesCount >= 2) score++;
+        if (typesCount >= 4) score++;
+
+        if (typesCount === 0) score = 0;
+
+        // Estilização baseada no score
+        if (score === 0) {
+            strengthBar.style.width = '0%';
+            strengthLabel.innerText = 'Inexistente';
+            strengthLabel.style.color = 'var(--text-muted)';
+        } else if (score <= 1) {
+            strengthBar.style.width = '25%';
+            strengthBar.style.backgroundColor = 'var(--danger)';
+            strengthLabel.innerText = 'Fraca';
+            strengthLabel.style.color = 'var(--danger)';
+        } else if (score <= 3) {
+            strengthBar.style.width = '60%';
+            strengthBar.style.backgroundColor = 'var(--warning)';
+            strengthLabel.innerText = 'Média';
+            strengthLabel.style.color = 'var(--warning)';
+        } else {
+            strengthBar.style.width = '100%';
+            strengthBar.style.backgroundColor = 'var(--success)';
+            strengthLabel.innerText = 'Forte';
+            strengthLabel.style.color = 'var(--success)';
+        }
+    }
+
+    // Gera uma senha inicial ao carregar a página
+    generateBtn.click();
+</script>
+
+</body>
+</html>
